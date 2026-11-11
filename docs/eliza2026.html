@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>第51回 エリザベス女王杯（GⅠ）</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f2e9;--card:#fff;--ink:#222;--mute:#7a7467;--line:#d9d0bd;--acc:#8a1f2b;--g:#1f5f3f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181a;--card:#202325;--ink:#eee;--mute:#9a9a9a;--line:#3a3f42;--acc:#e07a85;--g:#6fcf97}}
+:root[data-theme="dark"]{--bg:#16181a;--card:#202325;--ink:#eee;--mute:#9a9a9a;--line:#3a3f42;--acc:#e07a85;--g:#6fcf97}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Mincho ProN","Yu Mincho",serif;padding:14px}
+main{max-width:680px;margin:0 auto}
+h1{font-size:22px;margin:0;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.gi{color:var(--acc);font-size:12px;letter-spacing:.15em}
+.meta{font-size:12.5px;color:var(--mute);margin:8px 0}
+.box{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:10px 0;font-size:13.5px}
+.box b{color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{font:inherit;font-size:13px;padding:3px 12px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0}
+.card.out{opacity:.55}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1.5px solid var(--ink);padding-bottom:4px}
+.nm{font-size:18px;font-weight:700}
+.sub{font-size:12px;color:var(--mute);white-space:nowrap}
+.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-left:6px;vertical-align:middle;border:1px solid}
+.tg{color:var(--g);border-color:var(--g)}.tx{color:var(--acc);border-color:var(--acc)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:13px;margin-top:6px}
+.row span{color:var(--mute);font-size:11px;margin-right:4px}
+.rt{margin-top:6px;font-size:13px}.rt b{font-size:17px}
+select{font:inherit;font-size:13px;margin-top:6px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:1px 4px}
+.foot{font-size:11.5px;color:var(--mute);margin:16px 0}
+</style></head><body><main>
+<div class="gi">GⅠ</div>
+<h1>第51回 エリザベス女王杯（GⅠ）</h1>
+<p class="meta">2026年11月15日（日）京都11R 芝2200m（右・外回り）／3歳以上牝馬 定量（3歳54kg・4歳以上56kg）<br>データ時点：<span id="asof"></span>（登録馬段階・枠順と騎手は未確定）</p>
+<div class="box"><b>見どころ（JRAデータ分析より）</b><br>過去10年の単勝人気別成績を見ると、優勝馬延べ10頭のうち9頭、3着以内馬延べ30頭のうち20頭を5番人気以内の馬が占めている。人気薄の馬が上位に食い込んだ例も少なくないとはいえ、上位人気に支持されている馬は相応に高く評価するべきだろう。〔表1〕 過去10年の年齢別成績を見ると、3着以内馬延べ30頭のうち22頭を4歳以下の馬が占めており、3着内率でも5歳以上の馬を上回っている。年齢の高い馬よりも、比較的若い馬を重視したい。〔表2〕<br><b>回避</b>　エセルフリーダ</div>
+<div class="chips" id="chips"></div>
+<div id="list"></div>
+<p class="foot">出典：JRA（プレレーティング・レーティング順位・データ分析）、スポーツナビ（特別登録）。順位はJRAの日本馬レーティング順位（1〜15位のみ発表）。印はこの端末のブラウザにだけ保存されます。数値は目安であり、的中や利益を保証しません。馬券は自己責任でお楽しみください。</p>
+</main>
+<script>
+/* ===== 毎週ここだけ差し替える（name|性齢|斤量|厩舎|父|母|母父|レーティング|該当レース|JRA順位|旗 G=GⅠ勝ち馬 X=回避） ===== */
+var ASOF='2026年11月11日 21:02';
+var RAW=[
+  'アクアヴァーナル|牝5|56|四位洋文（栗）|エピファネイア|エイプリルミスト|ディープインパクト|111|天皇賞（春）4着|3|',
+  'アマイ|牝6|56|伊藤大士（美）|ダノンバラード|イオ|タイキシャトル||||',
+  'エストゥペンダ|牝4|56|高柳瑞樹（美）|サートゥルナーリア|エストレチャダ|OffleeWild|102|関越S1着||',
+  'エセルフリーダ|牝5|56|武藤善則（美）|キタサンブラック|デルマオギン|ハービンジャー|105|中山牝馬S1着||X',
+  'カテリーナ|牝5|56|田中克典（栗）|ホークビル|フェリーチェレガロ|マンハッタンカフェ||||',
+  'カムニャック|牝4|56|友道康夫（栗）|ブラックタイド|ダンスアミーガ|サクラバクシンオー|114|阪神牝馬S2着ほか|1|G',
+  'クイーンズウォーク|牝5|56|中内田充正（栗）|キズナ|ウェイヴェルアベニュー|Harlington|111|ヴィクトリアマイル3着|6|',
+  'ケリフレッドアスク|牝4|56|藤原英昭（栗）|ドゥラメンテ|ディープインアスク|ディープインパクト|107|福島牝馬S4着|13|',
+  'コガネノソラ|牝5|56|菊沢隆徳（美）|ゴールドシップ|マイネヒメル|ロージズインメイ|108|クイーンS2着|11|',
+  'サフィラ|牝5|56|池添学（栗）|ハーツクライ|サロミナ|Lomitas||||',
+  'シャドウメテオ|牝4|56|金成貴史（美）|オルフェーヴル|パールシャドウ|クロフネ|101|新潟牝馬S1着||',
+  'ジュウリョクピエロ|牝3|54|寺島良（栗）|オルフェーヴル|ハッピーヴァリュー|ゼンノロブロイ|112|優駿牝馬1着|2|G',
+  'ジョスラン|牝4|56|鹿戸雄一（美）|エピファネイア|ケイティーズハート|ハーツクライ|111|アイルランドトロフィー2着|5|',
+  'ステレンボッシュ|牝5|56|宮田敬介（美）|エピファネイア|ブルークランズ|ルーラーシップ|108|エプソムC2着|12|G',
+  'セキトバイースト|牝5|56|四位洋文（栗）|デクラレーションオブウォー|ベアフットレディ|Footstepsinthesand|109|府中牝馬S1着|8|',
+  'チェルヴィニア|牝5|56|木村哲也（美）|ハービンジャー|チェッキーノ|キングカメハメハ||||G',
+  'ニシノティアモ|牝5|56|上原佑紀（美）|ドゥラメンテ|ニシノアモーレ|コンデュイット|109|ヴィクトリアマイル6着|9|',
+  'マリアイリダータ|牝4|56|田中博康（美）|ドゥラメンテ|マルケッサ|オルフェーヴル|103|チャレンジC4着||',
+  'ラフターラインズ|牝3|54|小笠倫弘（美）|アルアイン|バンゴール|キングカメハメハ|111|優駿牝馬3着|4|',
+  'ラヴァンダ|牝5|56|中村直也（栗）|シルバーステート|ゴッドパイレーツ|ベーカバド|109|中京記念1着ほか|7|',
+  'レイクラシック|牝3|54|新谷功一（栗）|キタサンブラック|メジロジェニファー|ホワイトマズル|109|優駿牝馬6着|10|',
+  'レーゼドラマ|牝4|56|辻野泰之（栗）|キズナ|シアードラマ|BurningRoma|106|小倉記念3着|14|',
+  'ヴーレヴー|牝4|56|武幸四郎（栗）|サトノクラウン|アルギュロス|マンハッタンカフェ|106|クイーンS3着|15|'
+];
+/* ===== ここから下は共通 ===== */
+var H=RAW.map(function(s){var a=s.split('|');return{n:a[0],a:a[1],k:a[2],t:a[3],s:a[4],d:a[5],dd:a[6],r:+a[7]||0,rc:a[8],rk:+a[9]||99,f:a[10]||''}});
+H.sort(function(x,y){return x.rk-y.rk||y.r-x.r});
+var K='eliza2026-marks',M={},flt='all';
+try{M=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
+document.getElementById('asof').textContent=ASOF;
+var F={all:['全馬',function(){return 1}],g:['GⅠ勝ち馬',function(h){return h.f==='G'}],y:['3歳',function(h){return h.a==='牝3'}],ok:['回避を除く',function(h){return h.f!=='X'}]};
+function chips(){document.getElementById('chips').innerHTML=Object.keys(F).map(function(k){var c=H.filter(F[k][1]).length;return '<button class="chip'+(k===flt?' on':'')+'" data-k="'+k+'">'+F[k][0]+' '+c+'</button>'}).join('')}
+function list(){document.getElementById('list').innerHTML=H.filter(F[flt][1]).map(function(h){
+ var tg=(h.f==='G'?'<span class="tag tg">GⅠ勝ち馬</span>':'')+(h.f==='X'?'<span class="tag tx">回避</span>':'');
+ var o=['','◎','○','▲','△','☆','×'].map(function(m){return '<option'+(M[h.n]===m?' selected':'')+'>'+m+'</option>'}).join('');
+ return '<div class="card'+(h.f==='X'?' out':'')+'"><div class="top"><span class="nm">'+h.n+tg+'</span><span class="sub">'+h.a+'　'+h.k+'kg</span></div>'+
+ '<div class="row"><div><span>厩舎</span>'+h.t+'</div><div><span>父</span>'+h.s+'</div><div><span>母</span>'+h.d+'</div><div><span>母父</span>'+h.dd+'</div></div>'+
+ '<div class="rt">'+(h.r?'レーティング <b>'+h.r+'</b>　'+h.rc+(h.rk<99?'　JRA順位 '+h.rk+'位':''):'<span class="sub">今年のレーティング該当なし</span>')+'</div>'+
+ '<select data-n="'+h.n+'" aria-label="印">'+o+'</select></div>'}).join('')}
+document.getElementById('chips').addEventListener('click',function(e){var k=e.target.dataset.k;if(k){flt=k;chips();list()}});
+document.getElementById('list').addEventListener('change',function(e){var n=e.target.dataset.n;if(!n)return;M[n]=e.target.value;try{localStorage.setItem(K,JSON.stringify(M))}catch(x){}});
+chips();list();
+</script></body></html>
