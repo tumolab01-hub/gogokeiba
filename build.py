@@ -126,9 +126,66 @@ def build_race(cfg, today):
     return len(horses)
 
 
-def write_index(races):
+VENUES = {"札幌": "01", "函館": "02", "福島": "03", "新潟": "04", "東京": "05",
+          "中山": "06", "中京": "07", "京都": "08", "阪神": "09", "小倉": "10"}
+VENUE_RE = re.compile(r"(\d+)回(" + "|".join(VENUES) + r")(\d+)日")
+GRADE_RE = re.compile(r"[（(](?:J・)?G[ⅠⅡⅢ][）)]")
+WD = "月火水木金土日"
+
+
+def parse_day(soup, d):
+    """JRA各日番組表から重賞（GⅠ・GⅡ・GⅢ）を拾う。"""
+    out = []
+    for table in soup.select("table"):
+        if "レース番号" not in table.get_text():
+            continue
+        node = table.find_previous(string=VENUE_RE)
+        m = VENUE_RE.search(node) if node else None
+        if not m:
+            continue
+        kai, venue, nichi = int(m.group(1)), m.group(2), int(m.group(3))
+        for tr in table.find_all("tr"):
+            td = tr.find_all("td")
+            rn = re.match(r"(\d+)レース", td[0].get_text(strip=True)) if len(td) >= 2 else None
+            if not rn:
+                continue
+            lines = td[1].get_text("\n", strip=True).split("\n")
+            gi = next((i for i, l in enumerate(lines) if GRADE_RE.search(l)), None)
+            if gi is None:
+                continue
+            r = int(rn.group(1))
+            cond = [l for l in lines[gi + 1:] if not re.fullmatch(r"[（(].*[）)]", l)]
+            sid = f"{d.year % 100:02d}{VENUES[venue]}{kai:02d}{nichi:02d}{r:02d}"
+            out.append({
+                "slug": f"g{d:%Y%m%d}-{VENUES[venue]}{r:02d}",
+                "date": d.isoformat(),
+                "eyebrow": re.search(r"G[ⅠⅡⅢ]", lines[gi]).group(),
+                "title": lines[gi],
+                "meta": f"{d.year}年{d.month}月{d.day}日（{WD[d.weekday()]}）{venue}{r}R　" + "／".join(cond),
+                "sportsnavi": f"https://sports.yahoo.co.jp/keiba/race/regist/{sid}",
+                "auto": True,
+            })
+    return out
+
+
+def discover(today, days=9):
+    found = []
+    for i in range(days):
+        d = today + dt.timedelta(days=i)
+        if d.weekday() not in (5, 6, 0):  # 土・日・月（祝日開催）
+            continue
+        url = f"https://www.jra.go.jp/keiba/calendar{d.year}/{d.year}/{d.month}/{d.month:02d}{d.day:02d}.html"
+        try:
+            found += parse_day(fetch(url), d)
+        except Exception as e:
+            print(f"  [info] 番組表なし/取得失敗 {d}: {e}")
+    print(f"自動検出: 重賞{len(found)}件")
+    return found
+
+
+def write_index(archive):
     items = "".join(f'<li><a href="{r["slug"]}.html">{html.escape(r["title"])}</a>　<small>{r["date"]}</small></li>'
-                    for r in sorted(races, key=lambda r: r["date"], reverse=True))
+                    for r in sorted(archive, key=lambda r: r["date"], reverse=True))
     (OUT / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>重賞ボード</title><body style="font:16px/1.8 serif;max-width:640px;margin:20px auto;padding:0 14px">'
@@ -137,8 +194,12 @@ def write_index(races):
 
 def main():
     OUT.mkdir(exist_ok=True)
-    races = json.loads((ROOT / "races.json").read_text(encoding="utf-8"))
+    manual = json.loads((ROOT / "races.json").read_text(encoding="utf-8"))
     today = dt.datetime.now(JST).date()
+    known = {c["sportsnavi"] for c in manual}
+    races = manual + [c for c in discover(today) if c["sportsnavi"] not in known]
+    af = OUT / "archive.json"
+    archive = {a["slug"]: a for a in (json.loads(af.read_text(encoding="utf-8")) if af.exists() else [])}
     ok = fail = 0
     for cfg in races:
         out = OUT / f"{cfg['slug']}.html"
@@ -147,12 +208,16 @@ def main():
             continue
         try:
             n = build_race(cfg, today)
-            print(f"ok: {cfg['slug']} {n}頭")
+            print(f"ok: {cfg['slug']} {cfg['title']} {n}頭")
+            archive[cfg["slug"]] = {"slug": cfg["slug"], "title": cfg["title"], "date": cfg["date"]}
             ok += 1
         except Exception as e:
-            print(f"[error] {cfg['slug']}: {e}")
-            fail += 1
-    write_index(races)
+            # 自動検出分は、登録がまだ公開されていないだけの場合があるので警告にとどめる
+            print(f"[{'warn' if cfg.get('auto') else 'error'}] {cfg['slug']} {cfg['title']}: {e}")
+            if not cfg.get("auto"):
+                fail += 1
+    af.write_text(json.dumps(list(archive.values()), ensure_ascii=False, indent=1), encoding="utf-8")
+    write_index(list(archive.values()))
     if fail and not ok:
         sys.exit(1)
 
