@@ -30,7 +30,7 @@ tr.out td{opacity:.5}
 .num{text-align:right;white-space:nowrap;font-weight:700}
 .num small{display:block;font-weight:400;font-size:11px;color:var(--mute)}
 .tag{font-size:10.5px;padding:0 5px;border-radius:3px;margin-left:5px;border:1px solid;vertical-align:middle}
-.tg{color:var(--org);border-color:var(--org)}.tx{color:var(--red);border-color:var(--red)}
+.links h3{font-size:13px;margin:12px 0 4px;color:var(--mute)}.lk{display:inline-block;margin:3px 6px 3px 0;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font-size:13px;text-decoration:none}.tp{color:var(--head);border-color:var(--head)}.src{margin:10px 0}.s{display:inline-block;font-size:11.5px;padding:1px 8px;margin:2px 4px 2px 0;border-radius:3px}.s.ok{background:var(--th);color:var(--head)}.s.ng{background:var(--zebra);color:var(--mute)}.tg{color:var(--org);border-color:var(--org)}.tx{color:var(--red);border-color:var(--red)}
 select{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:2px}
 .foot{font-size:11.5px;color:var(--mute);margin:14px 2px}
 @media (max-width:640px){.c-t,.c-s,.c-k{display:none}.sub{display:block}td,th{padding:7px 6px}h1{font-size:18px}.nm{font-size:14.5px}}
@@ -42,6 +42,8 @@ select{font:inherit;background:var(--card);color:var(--ink);border:1px solid var
 <div class="box">{{HIGHLIGHT}}</div>
 <div class="tabs" id="chips"></div>
 <div class="wrap"><table><thead><tr><th>印</th><th>馬名</th><th>性齢</th><th class="c-k">斤量</th><th class="c-t">厩舎</th><th class="c-s">父／母（母父）</th><th>RT</th><th>順位</th></tr></thead><tbody id="list"></tbody></table></div>
+<div class="src">取得元：{{SOURCES}}</div>
+{{LINKS}}
 <p class="foot">出典：JRA（プレレーティング・レーティング順位・データ分析）、スポーツナビ（特別登録）。RTはJRAのレーティング、順位はJRAの日本馬レーティング順位（1〜15位のみ発表）。印はこの端末のブラウザにだけ保存されます。数値は目安であり、的中や利益を保証しません。馬券は自己責任でお楽しみください。</p>
 </main>
 <script>
@@ -56,12 +58,12 @@ H.sort(function(x,y){return x.rk-y.rk||y.r-x.r});
 var K='{{KEY}}',M={},flt='all';
 try{M=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
 document.getElementById('asof').textContent=ASOF;
-var F={all:['全馬',function(){return 1}],g:['GⅠ勝ち馬',function(h){return h.f==='G'}],y:['3歳',function(h){return h.a==='牝3'}],ok:['回避を除く',function(h){return h.f!=='X'}]};
+var F={all:['全馬',function(){return 1}],g:['GⅠ勝ち馬',function(h){return h.f.indexOf('G')>=0}],p:['JRA注目',function(h){return h.f.indexOf('P')>=0}],y:['3歳',function(h){return h.a==='牝3'}],ok:['回避を除く',function(h){return h.f.indexOf('X')<0}]};
 function chips(){document.getElementById('chips').innerHTML=Object.keys(F).map(function(k){return '<button class="tab'+(k===flt?' on':'')+'" data-k="'+k+'">'+F[k][0]+' '+H.filter(F[k][1]).length+'</button>'}).join('')}
 function list(){document.getElementById('list').innerHTML=H.filter(F[flt][1]).map(function(h){
- var tg=(h.f==='G'?'<span class="tag tg">GⅠ勝ち</span>':'')+(h.f==='X'?'<span class="tag tx">回避</span>':'');
+ var tg=(h.f.indexOf('G')>=0?'<span class="tag tg">GⅠ勝ち</span>':'')+(h.f.indexOf('P')>=0?'<span class="tag tp">JRA注目</span>':'')+(h.f.indexOf('X')>=0?'<span class="tag tx">回避</span>':'');
  var o=['','◎','○','▲','△','☆','×'].map(function(m){return '<option'+(M[h.n]===m?' selected':'')+'>'+m+'</option>'}).join('');
- return '<tr class="'+(h.f==='X'?'out':'')+'"><td><select data-n="'+h.n+'" aria-label="印">'+o+'</select></td>'+
+ return '<tr class="'+(h.f.indexOf('X')>=0?'out':'')+'"><td><select data-n="'+h.n+'" aria-label="印">'+o+'</select></td>'+
  '<td><span class="nm">'+h.n+'</span>'+tg+'<div class="sub">'+h.t+'　'+h.s+'／'+h.d+'（'+h.dd+'）</div></td>'+
  '<td>'+h.a+'</td><td class="c-k">'+h.k+'</td><td class="c-t">'+h.t+'</td><td class="c-s">'+h.s+'<br><small>'+h.d+'（'+h.dd+'）</small></td>'+
  '<td class="num">'+(h.r||'-')+(h.rc?'<small>'+h.rc+'</small>':'')+'</td><td class="num">'+(h.rk<99?h.rk:'-')+'</td></tr>'}).join('')}

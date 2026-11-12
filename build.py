@@ -83,6 +83,21 @@ def parse_analysis(soup):
     return " ".join([p for p in ps if "過去10年" in p and len(p) > 40][:2])
 
 
+def find_thisweek(cfg):
+    """JRA『今週の注目レース』出走馬情報ページを探し、注目馬の名前一覧を返す。"""
+    d = dt.date.fromisoformat(cfg["date"])
+    core = re.sub(r"第\d+回\s*|[（(][^）)]*[）)]", "", cfg["title"]).strip()
+    for n in (1, 2, 3):
+        url = f"https://www.jra.go.jp/keiba/thisweek/{d.year}/{d:%m%d}_{n}/horse.html"
+        try:
+            soup = fetch(url)
+        except Exception:
+            continue
+        if core and core in (soup.title.get_text() if soup.title else ""):
+            return url, {norm(h.get_text()) for h in soup.select("h3") if h.get_text(strip=True)}
+    return "", set()
+
+
 def js_str(s):
     return "'" + s.replace("\\", "").replace("'", "’") + "'"
 
@@ -103,10 +118,21 @@ def build_race(cfg, today):
                 else: ana = v
             except Exception as e:  # 任意ソースは失敗しても続行
                 print(f"  [warn] {key}: {e}")
+    try:
+        tw_url, notable = find_thisweek(cfg)
+    except Exception as e:
+        print(f"  [warn] thisweek: {e}")
+        tw_url, notable = "", set()
+    srcs = [("スポーツナビ 特別登録", len(horses)), ("JRA プレレーティング", len(pre)), ("JRA レーティング順位", len(rank)),
+            ("JRA データ分析", 1 if ana else 0), ("JRA 今週の注目レース", len(notable))]
+    chips = "".join(f'<span class="s {"ok" if n else "ng"}">{"✓" if n else "－"} {html.escape(k)}</span>' for k, n in srcs)
+    rl = [("スポーツナビ 特別登録", cfg["sportsnavi"])] + [(n, cfg[k]) for n, k in (("JRA プレレーティング", "jra_prerating"), ("JRA レーティング順位", "jra_rank_news"), ("JRA データ分析", "jra_analysis")) if cfg.get(k)]
+    if tw_url:
+        rl.append(("JRA 注目レース出走馬情報", tw_url))
     lines = []
     for h in horses:
         r, rc = pre.get(h["name"], (0, ""))
-        flag = "X" if h["name"] in cfg.get("scratched", []) else "G" if h["name"] in cfg.get("g1_winners", []) else ""
+        flag = ("X" if h["name"] in cfg.get("scratched", []) else "") + ("G" if h["name"] in cfg.get("g1_winners", []) else "") + ("P" if h["name"] in notable else "")
         f = [h["name"], h["age"], h["kg"], h["trainer"], h["sire"], h["dam"], h["damsire"],
              str(r or ""), rc, str(rank.get(h["name"], "")), flag]
         lines.append("  " + js_str("|".join(x.replace("'", "’").replace("|", "／") for x in f)))
@@ -119,11 +145,28 @@ def build_race(cfg, today):
     rep = {"{{TITLE}}": html.escape(cfg["title"]), "{{EYEBROW}}": html.escape(cfg.get("eyebrow", "")),
            "{{META}}": html.escape(cfg["meta"]), "{{HIGHLIGHT}}": box,
            "{{ASOF}}": f"{now.year}年{now.month}月{now.day}日 {now:%H:%M}", "{{RAW}}": ",\n".join(lines),
-           "{{KEY}}": cfg["slug"] + "-marks"}
+           "{{KEY}}": cfg["slug"] + "-marks", "{{SOURCES}}": chips, "{{LINKS}}": links_html(rl)}
     for k, v in rep.items():
         t = t.replace(k, v)
     (OUT / f"{cfg['slug']}.html").write_text(t, encoding="utf-8")
-    return len(horses)
+    return len(horses), [(k, n) for k, n in srcs], tw_url
+
+
+SRC_WHAT = {"スポーツナビ 特別登録": "登録馬・厩舎・血統", "JRA プレレーティング": "レーティングと該当レース", "JRA レーティング順位": "JRAの順位（1〜15位）",
+            "JRA データ分析": "過去10年の傾向", "JRA 今週の注目レース": "JRA注目馬（出走馬情報）"}
+EXT = [("他サイトで見る（リンクのみ）", [("netkeiba レース一覧", "https://race.netkeiba.com/top/race_list.html"), ("netkeiba データベース", "https://db.netkeiba.com/"),
+        ("競馬ラボ", "https://www.keibalab.jp/"), ("ウマニティ", "https://umanity.jp/"), ("JBISサーチ", "https://www.jbis.or.jp/"),
+        ("楽天競馬", "https://keiba.rakuten.co.jp/"), ("オッズパーク", "https://www.oddspark.com/keiba/")]),
+       ("調教・ニュース", [("サンスポ競馬", "https://www.sanspo.com/race/"), ("デイリー競馬", "https://www.daily.co.jp/horse/"),
+        ("東スポ競馬", "https://www.tokyo-sports.co.jp/race/"), ("中日スポーツ競馬", "https://www.chunichi.co.jp/chuspo/horserace")]),
+       ("映像・地方競馬", [("JRA公式YouTube", "https://www.youtube.com/@JRAofficial"), ("地方競馬情報（NAR）", "https://www.keiba.go.jp/"),
+        ("南関東競馬", "https://www.nankankeiba.com/")])]
+
+
+def links_html(race_links):
+    groups = ([("このレースの情報元", race_links)] if race_links else []) + EXT
+    out = "".join(f'<h3>{html.escape(t)}</h3>' + "".join(f'<a class="lk" href="{html.escape(u)}" target="_blank" rel="noopener noreferrer">{html.escape(l)}</a>' for l, u in ls) for t, ls in groups)
+    return f'<div class="links">{out}<p class="foot">リンク先は各サイトの規約に従ってご覧ください。このサイトは、これらのサイトのデータを取り込んでいません。</p></div>'
 
 
 VENUES = {"札幌": "01", "函館": "02", "福島": "03", "新潟": "04", "東京": "05",
@@ -183,13 +226,30 @@ def discover(today, days=9):
     return found
 
 
-def write_index(archive):
-    items = "".join(f'<li><a href="{r["slug"]}.html">{html.escape(r["title"])}</a>　<small>{r["date"]}</small></li>'
-                    for r in sorted(archive, key=lambda r: r["date"], reverse=True))
+def write_index(archive, status):
+    today = dt.datetime.now(JST).date().isoformat()
+    def card(r):
+        badge = f'<span class="g">{html.escape(r.get("eyebrow", ""))}</span>' if r.get("eyebrow") else ""
+        ch = "".join(f'<i class="{"ok" if n else "ng"}">{html.escape(k.split(" ")[-1])}</i>' for k, n in r.get("sources", []))
+        return (f'<a class="c" href="{r["slug"]}.html"><div class="t">{badge}<b>{html.escape(r["title"])}</b></div>'
+                f'<div class="m">{html.escape(r.get("meta", r["date"]))}</div><div class="s">{ch}</div></a>')
+    up = sorted([r for r in archive if r["date"] >= today], key=lambda r: r["date"])
+    past = sorted([r for r in archive if r["date"] < today], key=lambda r: r["date"], reverse=True)
+    st = "".join(f'<li><b>{html.escape(k)}</b>　<span class="{"ok" if v["ok"] else "ng"}">{"取得中" if v["ok"] else "未取得"}</span>　<small>{html.escape(v.get("what", ""))}　最終成功 {v.get("last", "-")}</small></li>' for k, v in status.items())
+    css = ("*{box-sizing:border-box}body{margin:0;background:#f1f4f1;color:#1d2421;font:14px/1.6 'Hiragino Kaku Gothic ProN',Meiryo,sans-serif}"
+           ".bar{background:#1f5f3f;color:#fff;padding:12px 14px;font-weight:700;font-size:17px;position:sticky;top:0}main{max-width:860px;margin:0 auto;padding:10px}"
+           "h2{font-size:15px;border-left:4px solid #e8731a;padding-left:8px;margin:18px 0 8px}.c{display:block;background:#fff;border:1px solid #ccd6cf;border-radius:6px;padding:10px 12px;margin:8px 0;color:inherit;text-decoration:none}"
+           ".c .t{font-size:16px}.g{background:#e8731a;color:#fff;font-size:11px;padding:0 7px;border-radius:3px;margin-right:6px}.m{color:#6b7670;font-size:12.5px}"
+           ".s i{font-style:normal;font-size:11px;margin:4px 4px 0 0;display:inline-block;padding:0 6px;border-radius:3px}.ok{color:#1f5f3f}.ng{color:#999}.s i.ok{background:#e8efe9}.s i.ng{background:#eee}"
+           "ul{list-style:none;padding:0;margin:0}li{background:#fff;border:1px solid #ccd6cf;border-radius:6px;padding:8px 12px;margin:6px 0}small{color:#6b7670}.n{color:#6b7670;font-size:12.5px}.links h3{font-size:13px;margin:10px 0 4px;color:#6b7670}.lk{display:inline-block;margin:3px 6px 3px 0;padding:8px 12px;border:1px solid #ccd6cf;border-radius:6px;background:#fff;color:#1f5f3f;font-size:13px;text-decoration:none}.foot{font-size:11.5px;color:#6b7670}")
     (OUT / "index.html").write_text(
-        '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        '<title>重賞ボード</title><style>body{margin:0;font:15px/1.7 sans-serif;background:#f1f4f1}h1{margin:0;background:#1f5f3f;color:#fff;font-size:18px;padding:12px 14px}ul{list-style:none;margin:0;padding:8px}li{background:#fff;border:1px solid #ccd6cf;border-radius:6px;margin:6px 0;padding:10px 12px}a{color:#1f5f3f;font-weight:700;text-decoration:none}small{color:#777;margin-left:8px}</style><body>'
-        f"<h1>重賞ボード</h1><ul>{items}</ul></body>", encoding="utf-8")
+        '<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>重賞ボード</title>'
+        f'<style>{css}</style><div class="bar">重賞ボード　<small style="color:#cfe3d6">JRAの重賞を毎週自動で整理</small></div><main>'
+        f'<h2>これからの重賞</h2>{"".join(card(r) for r in up) or "<p class=n>いま公開できる重賞はありません。登録が出ると自動で追加されます。</p>"}'
+        f'<h2>過去の重賞</h2>{"".join(card(r) for r in past) or "<p class=n>まだありません。</p>"}'
+        f'<h2>取得元の状況</h2><ul>{st}</ul>'
+        f'<h2>情報リンク</h2><div class="links">{links_html([])}</div>'
+        '<p class="n">数値は目安であり、的中や利益を保証しません。馬券は自己責任でお楽しみください。</p></main></html>', encoding="utf-8")
 
 
 def main():
@@ -200,6 +260,8 @@ def main():
     races = manual + [c for c in discover(today) if c["sportsnavi"] not in known]
     af = OUT / "archive.json"
     archive = {a["slug"]: a for a in (json.loads(af.read_text(encoding="utf-8")) if af.exists() else [])}
+    sf = OUT / "status.json"
+    status = json.loads(sf.read_text(encoding="utf-8")) if sf.exists() else {k: {"ok": 0, "last": "-", "what": w} for k, w in SRC_WHAT.items()}
     ok = fail = 0
     for cfg in races:
         out = OUT / f"{cfg['slug']}.html"
@@ -207,9 +269,14 @@ def main():
             print(f"skip（開催済み）: {cfg['slug']}")
             continue
         try:
-            n = build_race(cfg, today)
-            print(f"ok: {cfg['slug']} {cfg['title']} {n}頭")
-            archive[cfg["slug"]] = {"slug": cfg["slug"], "title": cfg["title"], "date": cfg["date"]}
+            n, srcs, tw = build_race(cfg, today)
+            print(f"ok: {cfg['slug']} {cfg['title']} {n}頭 / " + " ".join(f"{k}={v}" for k, v in srcs))
+            archive[cfg["slug"]] = {"slug": cfg["slug"], "title": cfg["title"], "date": cfg["date"], "eyebrow": cfg.get("eyebrow", ""), "meta": cfg["meta"], "sources": srcs}
+            for k, v in srcs:
+                e = status.setdefault(k, {"ok": 0, "last": "-", "what": SRC_WHAT.get(k, "")})
+                if v:
+                    e["ok"] = 1
+                    e["last"] = dt.datetime.now(JST).strftime("%m/%d %H:%M")
             ok += 1
         except Exception as e:
             # 自動検出分は、登録がまだ公開されていないだけの場合があるので警告にとどめる
@@ -217,7 +284,8 @@ def main():
             if not cfg.get("auto"):
                 fail += 1
     af.write_text(json.dumps(list(archive.values()), ensure_ascii=False, indent=1), encoding="utf-8")
-    write_index(list(archive.values()))
+    sf.write_text(json.dumps(status, ensure_ascii=False, indent=1), encoding="utf-8")
+    write_index(list(archive.values()), status)
     if fail and not ok:
         sys.exit(1)
 
