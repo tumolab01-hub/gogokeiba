@@ -1,0 +1,35 @@
+name: backtest
+on:
+  workflow_dispatch:
+    inputs:
+      test_start:
+        description: "テスト期間の開始年（この年より前で学習）"
+        default: "2015"
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas scikit-learn kaggle
+      - name: Kaggleからデータを取得
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          kaggle datasets download -d takamotoki/jra-horse-racing-dataset -f 19860105-20210731_race_result.csv -p data --unzip
+          ls -la data
+      - name: 検証を実行
+        run: python backtest.py data/19860105-20210731_race_result.csv ${{ github.event.inputs.test_start }}
+      - name: 結果を保存
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/backtest.html
+          git diff --cached --quiet || git commit -m "backtest report"
+          git push
