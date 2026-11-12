@@ -188,7 +188,7 @@ def write_index(archive):
                     for r in sorted(archive, key=lambda r: r["date"], reverse=True))
     (OUT / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        '<title>重賞ボード</title><body style="font:16px/1.8 serif;max-width:640px;margin:20px auto;padding:0 14px">'
+        '<title>重賞ボード</title><style>body{margin:0;font:15px/1.7 sans-serif;background:#f1f4f1}h1{margin:0;background:#1f5f3f;color:#fff;font-size:18px;padding:12px 14px}ul{list-style:none;margin:0;padding:8px}li{background:#fff;border:1px solid #ccd6cf;border-radius:6px;margin:6px 0;padding:10px 12px}a{color:#1f5f3f;font-weight:700;text-decoration:none}small{color:#777;margin-left:8px}</style><body>'
         f"<h1>重賞ボード</h1><ul>{items}</ul></body>", encoding="utf-8")
 
 

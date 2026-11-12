@@ -97,7 +97,7 @@ def fit_predict(d, feats, test_start):
 
 
 def tbl(df):
-    return df.to_html(index=False, border=0, classes="t", float_format=lambda x: f"{x:,.1f}")
+    return '<div class="wrap">' + df.to_html(index=False, border=0, classes="t", float_format=lambda x: f"{x:,.1f}") + "</div>"
 
 
 def roi_row(sub):
@@ -128,7 +128,7 @@ def report(d, te, test_start, nfeat):
             yr.append({"モデル": label, "年": int(y), **roi_row(v)})
     yr = pd.DataFrame(yr)
     allbet = roi_row(te)
-    css = "body{font:14px/1.7 sans-serif;max-width:860px;margin:16px auto;padding:0 12px}table.t{border-collapse:collapse;margin:8px 0 20px}.t th,.t td{border:1px solid #ccc;padding:3px 8px;text-align:right}.t th{background:#f3efe6}.note{background:#fff4d6;padding:8px 12px;border-radius:6px}"
+    css = "body{margin:0 auto;max-width:860px;font:14px/1.7 sans-serif;background:#f1f4f1;color:#1d2421;padding:0 10px 20px}h1{background:#1f5f3f;color:#fff;font-size:18px;margin:0 -10px 12px;padding:12px 14px}h2{font-size:16px;border-left:4px solid #e8731a;padding-left:8px;margin:20px 0 6px}.wrap{overflow-x:auto;background:#fff;border:1px solid #ccd6cf}table.t{border-collapse:collapse;width:100%;white-space:nowrap}.t th,.t td{border-bottom:1px solid #ccd6cf;padding:5px 9px;text-align:right}.t th{background:#e8efe9;font-size:12px}.t tr:nth-child(even) td{background:#f8faf8}.note{background:#fff;border:1px solid #ccd6cf;border-left:4px solid #e8731a;padding:8px 12px;border-radius:6px}"
     html_ = f"""<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>単勝バックテスト</title><style>{css}</style>
 <h1>単勝バックテスト（無料データ）</h1>
 <p class="note">データ：Kaggle「JRA日本中央競馬会 Horse Racing Dataset」（CC BY 4.0、作者 takamotoki、1986〜2021年7月）。モデルの学習は{test_start}年より前のレースだけで行い、<b>{test_start}年以降の{len(te):,}頭は学習に使っていない期間</b>で評価しています。回収率の「下限〜上限」は誤差を含めた95%の範囲です。過去の結果であり、将来の的中や利益を保証しません。</p>
