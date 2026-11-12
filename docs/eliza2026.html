@@ -3,44 +3,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>第51回 エリザベス女王杯（GⅠ）</title>
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f2e9;--card:#fff;--ink:#222;--mute:#7a7467;--line:#d9d0bd;--acc:#8a1f2b;--g:#1f5f3f}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181a;--card:#202325;--ink:#eee;--mute:#9a9a9a;--line:#3a3f42;--acc:#e07a85;--g:#6fcf97}}
-:root[data-theme="dark"]{--bg:#16181a;--card:#202325;--ink:#eee;--mute:#9a9a9a;--line:#3a3f42;--acc:#e07a85;--g:#6fcf97}
+:root{box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f1f4f1;--card:#fff;--ink:#1d2421;--mute:#6b7670;--line:#ccd6cf;--head:#1f5f3f;--th:#e8efe9;--org:#e8731a;--red:#c0392b;--zebra:#f8faf8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111513;--card:#1a1f1c;--ink:#e8ece9;--mute:#9aa59f;--line:#34403a;--head:#17472f;--th:#243029;--org:#f0924a;--red:#e67c70;--zebra:#1e2421}}
+:root[data-theme="dark"]{--bg:#111513;--card:#1a1f1c;--ink:#e8ece9;--mute:#9aa59f;--line:#34403a;--head:#17472f;--th:#243029;--org:#f0924a;--red:#e67c70;--zebra:#1e2421}
 *{box-sizing:border-box}html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Mincho ProN","Yu Mincho",serif;padding:14px}
-main{max-width:680px;margin:0 auto}
-h1{font-size:22px;margin:0;border-bottom:2px solid var(--ink);padding-bottom:6px}
-.gi{color:var(--acc);font-size:12px;letter-spacing:.15em}
-.meta{font-size:12.5px;color:var(--mute);margin:8px 0}
-.box{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:10px 0;font-size:13.5px}
-.box b{color:var(--acc)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
-.chip{font:inherit;font-size:13px;padding:3px 12px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);cursor:pointer}
-.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0}
-.card.out{opacity:.55}
-.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1.5px solid var(--ink);padding-bottom:4px}
-.nm{font-size:18px;font-weight:700}
-.sub{font-size:12px;color:var(--mute);white-space:nowrap}
-.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-left:6px;vertical-align:middle;border:1px solid}
-.tg{color:var(--g);border-color:var(--g)}.tx{color:var(--acc);border-color:var(--acc)}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:13px;margin-top:6px}
-.row span{color:var(--mute);font-size:11px;margin-right:4px}
-.rt{margin-top:6px;font-size:13px}.rt b{font-size:17px}
-select{font:inherit;font-size:13px;margin-top:6px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:1px 4px}
-.foot{font-size:11.5px;color:var(--mute);margin:16px 0}
-</style></head><body><main>
-<div class="gi">GⅠ</div>
-<h1>第51回 エリザベス女王杯（GⅠ）</h1>
-<p class="meta">2026年11月15日（日）京都11R 芝2200m（右・外回り）／3歳以上牝馬 定量（3歳54kg・4歳以上56kg）<br>データ時点：<span id="asof"></span>（登録馬段階・枠順と騎手は未確定）</p>
+body{background:var(--bg);color:var(--ink);font:14px/1.6 "Hiragino Kaku Gothic ProN","Meiryo",sans-serif}
+.bar{background:var(--head);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;font-weight:700;font-size:16px;position:sticky;top:0;z-index:5}
+main{max-width:860px;margin:0 auto;padding:10px}
+.race{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px}
+.gi{display:inline-block;background:var(--org);color:#fff;font-size:12px;font-weight:700;padding:0 8px;border-radius:3px}
+h1{font-size:20px;margin:6px 0 4px}
+.meta{font-size:12.5px;color:var(--mute);margin:0}
+.box{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--org);border-radius:6px;padding:8px 12px;margin:10px 0;font-size:13px}
+.box b{color:var(--org)}
+.tabs{display:flex;gap:2px;margin-top:10px;overflow-x:auto}
+.tab{font:inherit;font-size:13px;padding:7px 14px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--th);color:var(--mute);cursor:pointer;white-space:nowrap}
+.tab.on{background:var(--head);border-color:var(--head);color:#fff;font-weight:700}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%}
+th{background:var(--th);font-size:12px;color:var(--mute);padding:6px 8px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:var(--zebra)}
+tr.out td{opacity:.5}
+.nm{font-weight:700;font-size:15px}
+.sub{font-size:11.5px;color:var(--mute);display:none}
+.num{text-align:right;white-space:nowrap;font-weight:700}
+.num small{display:block;font-weight:400;font-size:11px;color:var(--mute)}
+.tag{font-size:10.5px;padding:0 5px;border-radius:3px;margin-left:5px;border:1px solid;vertical-align:middle}
+.links h3{font-size:13px;margin:12px 0 4px;color:var(--mute)}.lk{display:inline-block;margin:3px 6px 3px 0;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font-size:13px;text-decoration:none}.tp{color:var(--head);border-color:var(--head)}.src{margin:10px 0}.s{display:inline-block;font-size:11.5px;padding:1px 8px;margin:2px 4px 2px 0;border-radius:3px}.s.ok{background:var(--th);color:var(--head)}.s.ng{background:var(--zebra);color:var(--mute)}.tg{color:var(--org);border-color:var(--org)}.tx{color:var(--red);border-color:var(--red)}
+select{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:2px}
+.foot{font-size:11.5px;color:var(--mute);margin:14px 2px}
+@media (max-width:640px){.c-t,.c-s,.c-k{display:none}.sub{display:block}td,th{padding:7px 6px}h1{font-size:18px}.nm{font-size:14.5px}}
+</style></head><body>
+<div class="bar">重賞ボード</div>
+<main>
+<section class="race"><span class="gi">GⅠ</span><h1>第51回 エリザベス女王杯（GⅠ）</h1>
+<p class="meta">2026年11月15日（日）京都11R 芝2200m（右・外回り）／3歳以上牝馬 定量（3歳54kg・4歳以上56kg）<br>データ時点：<span id="asof"></span>（登録馬段階・枠順と騎手は未確定）</p></section>
 <div class="box"><b>見どころ（JRAデータ分析より）</b><br>過去10年の単勝人気別成績を見ると、優勝馬延べ10頭のうち9頭、3着以内馬延べ30頭のうち20頭を5番人気以内の馬が占めている。人気薄の馬が上位に食い込んだ例も少なくないとはいえ、上位人気に支持されている馬は相応に高く評価するべきだろう。〔表1〕 過去10年の年齢別成績を見ると、3着以内馬延べ30頭のうち22頭を4歳以下の馬が占めており、3着内率でも5歳以上の馬を上回っている。年齢の高い馬よりも、比較的若い馬を重視したい。〔表2〕<br><b>回避</b>　エセルフリーダ</div>
-<div class="chips" id="chips"></div>
-<div id="list"></div>
-<p class="foot">出典：JRA（プレレーティング・レーティング順位・データ分析）、スポーツナビ（特別登録）。順位はJRAの日本馬レーティング順位（1〜15位のみ発表）。印はこの端末のブラウザにだけ保存されます。数値は目安であり、的中や利益を保証しません。馬券は自己責任でお楽しみください。</p>
+<div class="tabs" id="chips"></div>
+<div class="wrap"><table><thead><tr><th>印</th><th>馬名</th><th>性齢</th><th class="c-k">斤量</th><th class="c-t">厩舎</th><th class="c-s">父／母（母父）</th><th>RT</th><th>順位</th></tr></thead><tbody id="list"></tbody></table></div>
+<div class="src">取得元：<span class="s ok">✓ スポーツナビ 特別登録</span><span class="s ok">✓ JRA プレレーティング</span><span class="s ok">✓ JRA レーティング順位</span><span class="s ok">✓ JRA データ分析</span><span class="s ng">－ JRA 今週の注目レース</span></div>
+<div class="links"><h3>このレースの情報元</h3><a class="lk" href="https://sports.yahoo.co.jp/keiba/race/regist/2608050411" target="_blank" rel="noopener noreferrer">スポーツナビ 特別登録</a><a class="lk" href="https://www.jra.go.jp/datafile/ranking/g1/2026/eliza.html" target="_blank" rel="noopener noreferrer">JRA プレレーティング</a><a class="lk" href="https://www.jra.go.jp/news/tokubetsu/2026eliza.html" target="_blank" rel="noopener noreferrer">JRA レーティング順位</a><a class="lk" href="https://www.jra.go.jp/keiba/g1/eliza/data.html" target="_blank" rel="noopener noreferrer">JRA データ分析</a><h3>他サイトで見る（リンクのみ）</h3><a class="lk" href="https://race.netkeiba.com/top/race_list.html" target="_blank" rel="noopener noreferrer">netkeiba レース一覧</a><a class="lk" href="https://db.netkeiba.com/" target="_blank" rel="noopener noreferrer">netkeiba データベース</a><a class="lk" href="https://www.keibalab.jp/" target="_blank" rel="noopener noreferrer">競馬ラボ</a><a class="lk" href="https://umanity.jp/" target="_blank" rel="noopener noreferrer">ウマニティ</a><a class="lk" href="https://www.jbis.or.jp/" target="_blank" rel="noopener noreferrer">JBISサーチ</a><a class="lk" href="https://keiba.rakuten.co.jp/" target="_blank" rel="noopener noreferrer">楽天競馬</a><a class="lk" href="https://www.oddspark.com/keiba/" target="_blank" rel="noopener noreferrer">オッズパーク</a><h3>調教・ニュース</h3><a class="lk" href="https://www.sanspo.com/race/" target="_blank" rel="noopener noreferrer">サンスポ競馬</a><a class="lk" href="https://www.daily.co.jp/horse/" target="_blank" rel="noopener noreferrer">デイリー競馬</a><a class="lk" href="https://www.tokyo-sports.co.jp/race/" target="_blank" rel="noopener noreferrer">東スポ競馬</a><a class="lk" href="https://www.chunichi.co.jp/chuspo/horserace" target="_blank" rel="noopener noreferrer">中日スポーツ競馬</a><h3>映像・地方競馬</h3><a class="lk" href="https://www.youtube.com/@JRAofficial" target="_blank" rel="noopener noreferrer">JRA公式YouTube</a><a class="lk" href="https://www.keiba.go.jp/" target="_blank" rel="noopener noreferrer">地方競馬情報（NAR）</a><a class="lk" href="https://www.nankankeiba.com/" target="_blank" rel="noopener noreferrer">南関東競馬</a><p class="foot">リンク先は各サイトの規約に従ってご覧ください。このサイトは、これらのサイトのデータを取り込んでいません。</p></div>
+<p class="foot">出典：JRA（プレレーティング・レーティング順位・データ分析）、スポーツナビ（特別登録）。RTはJRAのレーティング、順位はJRAの日本馬レーティング順位（1〜15位のみ発表）。印はこの端末のブラウザにだけ保存されます。数値は目安であり、的中や利益を保証しません。馬券は自己責任でお楽しみください。</p>
 </main>
 <script>
 /* ===== 毎週ここだけ差し替える（name|性齢|斤量|厩舎|父|母|母父|レーティング|該当レース|JRA順位|旗 G=GⅠ勝ち馬 X=回避） ===== */
-var ASOF='2026年11月12日 07:02';
+var ASOF='2026年11月13日 06:46';
 var RAW=[
   'アクアヴァーナル|牝5|56|四位洋文（栗）|エピファネイア|エイプリルミスト|ディープインパクト|111|天皇賞（春）4着|3|',
   'アマイ|牝6|56|伊藤大士（美）|ダノンバラード|イオ|タイキシャトル||||',
@@ -72,15 +80,15 @@ H.sort(function(x,y){return x.rk-y.rk||y.r-x.r});
 var K='eliza2026-marks',M={},flt='all';
 try{M=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
 document.getElementById('asof').textContent=ASOF;
-var F={all:['全馬',function(){return 1}],g:['GⅠ勝ち馬',function(h){return h.f==='G'}],y:['3歳',function(h){return h.a==='牝3'}],ok:['回避を除く',function(h){return h.f!=='X'}]};
-function chips(){document.getElementById('chips').innerHTML=Object.keys(F).map(function(k){var c=H.filter(F[k][1]).length;return '<button class="chip'+(k===flt?' on':'')+'" data-k="'+k+'">'+F[k][0]+' '+c+'</button>'}).join('')}
+var F={all:['全馬',function(){return 1}],g:['GⅠ勝ち馬',function(h){return h.f.indexOf('G')>=0}],p:['JRA注目',function(h){return h.f.indexOf('P')>=0}],y:['3歳',function(h){return h.a==='牝3'}],ok:['回避を除く',function(h){return h.f.indexOf('X')<0}]};
+function chips(){document.getElementById('chips').innerHTML=Object.keys(F).map(function(k){return '<button class="tab'+(k===flt?' on':'')+'" data-k="'+k+'">'+F[k][0]+' '+H.filter(F[k][1]).length+'</button>'}).join('')}
 function list(){document.getElementById('list').innerHTML=H.filter(F[flt][1]).map(function(h){
- var tg=(h.f==='G'?'<span class="tag tg">GⅠ勝ち馬</span>':'')+(h.f==='X'?'<span class="tag tx">回避</span>':'');
+ var tg=(h.f.indexOf('G')>=0?'<span class="tag tg">GⅠ勝ち</span>':'')+(h.f.indexOf('P')>=0?'<span class="tag tp">JRA注目</span>':'')+(h.f.indexOf('X')>=0?'<span class="tag tx">回避</span>':'');
  var o=['','◎','○','▲','△','☆','×'].map(function(m){return '<option'+(M[h.n]===m?' selected':'')+'>'+m+'</option>'}).join('');
- return '<div class="card'+(h.f==='X'?' out':'')+'"><div class="top"><span class="nm">'+h.n+tg+'</span><span class="sub">'+h.a+'　'+h.k+'kg</span></div>'+
- '<div class="row"><div><span>厩舎</span>'+h.t+'</div><div><span>父</span>'+h.s+'</div><div><span>母</span>'+h.d+'</div><div><span>母父</span>'+h.dd+'</div></div>'+
- '<div class="rt">'+(h.r?'レーティング <b>'+h.r+'</b>　'+h.rc+(h.rk<99?'　JRA順位 '+h.rk+'位':''):'<span class="sub">今年のレーティング該当なし</span>')+'</div>'+
- '<select data-n="'+h.n+'" aria-label="印">'+o+'</select></div>'}).join('')}
+ return '<tr class="'+(h.f.indexOf('X')>=0?'out':'')+'"><td><select data-n="'+h.n+'" aria-label="印">'+o+'</select></td>'+
+ '<td><span class="nm">'+h.n+'</span>'+tg+'<div class="sub">'+h.t+'　'+h.s+'／'+h.d+'（'+h.dd+'）</div></td>'+
+ '<td>'+h.a+'</td><td class="c-k">'+h.k+'</td><td class="c-t">'+h.t+'</td><td class="c-s">'+h.s+'<br><small>'+h.d+'（'+h.dd+'）</small></td>'+
+ '<td class="num">'+(h.r||'-')+(h.rc?'<small>'+h.rc+'</small>':'')+'</td><td class="num">'+(h.rk<99?h.rk:'-')+'</td></tr>'}).join('')}
 document.getElementById('chips').addEventListener('click',function(e){var k=e.target.dataset.k;if(k){flt=k;chips();list()}});
 document.getElementById('list').addEventListener('change',function(e){var n=e.target.dataset.n;if(!n)return;M[n]=e.target.value;try{localStorage.setItem(K,JSON.stringify(M))}catch(x){}});
 chips();list();
