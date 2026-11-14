@@ -8,6 +8,9 @@ on:
 concurrency:
   group: weekly
   cancel-in-progress: false
+concurrency:
+  group: weekly
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
