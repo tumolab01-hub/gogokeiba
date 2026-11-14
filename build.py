@@ -52,6 +52,72 @@ def parse_regist(soup):
     return horses
 
 
+def lines(tag):
+    for br in tag.find_all("br"):
+        br.replace_with("\n")
+    return [l.strip() for l in tag.get_text("").split("\n") if l.strip()]
+
+
+def guess_style(past):
+    """近走の第1コーナー位置から脚質（逃・先・差・追）を推定する。past=[(位置, 頭数)]"""
+    r = [(p, n) for p, n in past if p and n]
+    if not r:
+        return ""
+    if sum(1 for p, _ in r if p <= 2) / len(r) >= 0.5:
+        return "逃"
+    m = sum(p / n for p, n in r) / len(r)
+    return "先" if m < 0.3 else "差" if m < 0.6 else "追"
+
+
+def parse_denma(soup):
+    """スポーツナビ出馬表（?detail=1）: 馬名 -> 枠・馬番・鞍上・馬体重・近5走着順・推定脚質"""
+    t1 = t2 = None
+    for tb in soup.select("table"):
+        h = tb.get_text(" ", strip=True)[:60]
+        if "枠番" in h and "馬名" in h:
+            t1 = tb
+        elif "性齢" in h and "騎手" in h:
+            t2 = tb
+    if not (t1 and t2):
+        return {}
+    rows = lambda tb: [tr for tr in tb.find_all("tr") if tr.find("td")]
+    out = {}
+    for a, b in zip(rows(t1), rows(t2)):
+        c, d = a.find_all("td"), b.find_all("td")
+        if len(c) < 2 or not d or not c[1].find("a"):
+            continue
+        fl, jl, cl = lines(c[0]), lines(d[0]), lines(c[1])
+        fps, past = [], []
+        for cell in d[1:6]:
+            L = lines(cell)
+            if len(L) < 4:
+                continue
+            m = re.match(r"(\d+)", L[2])
+            fps.append(m.group(1) if m else "－")
+            n = re.search(r"(\d+)頭", L[3])
+            cn = next((x for x in L if re.fullmatch(r"\d+(-\d+)*", x)), "")
+            past.append((int(cn.split("-")[0]) if cn else 0, int(n.group(1)) if n else 0))
+        out[norm(c[1].find("a").get_text())] = {
+            "frame": fl[0] if fl else "", "num": fl[1] if len(fl) > 1 else "",
+            "jockey": norm(jl[1]) if len(jl) > 1 else "", "bw": (re.match(r"\d+", cl[1]).group() if len(cl) > 1 and re.match(r"\d+", cl[1]) else ""),
+            "form": "-".join(fps), "style": guess_style(past)}
+    return out
+
+
+def parse_odds(soup):
+    """スポーツナビ単勝オッズ: 馬名 -> 倍率、更新時刻"""
+    res = {}
+    for tr in soup.select("table tr"):
+        td = tr.find_all("td")
+        if len(td) >= 4 and td[1].get_text(strip=True).isdigit():
+            try:
+                res[norm(td[2].get_text())] = float(td[3].get_text(strip=True))
+            except ValueError:
+                pass
+    m = re.search(r"(\d{4}/\d+/\d+ \d+:\d+)\s*更新", soup.get_text(" "))
+    return res, (m.group(1) if m else "")
+
+
 def parse_prerating(soup):
     """JRAプレレーティング: 馬名 -> (数値, 該当レース)"""
     res = {}
@@ -126,15 +192,30 @@ def build_race(cfg, today):
     srcs = [("スポーツナビ 特別登録", len(horses)), ("JRA プレレーティング", len(pre)), ("JRA レーティング順位", len(rank)),
             ("JRA データ分析", 1 if ana else 0), ("JRA 今週の注目レース", len(notable))]
     chips = "".join(f'<span class="s {"ok" if n else "ng"}">{"✓" if n else "－"} {html.escape(k)}</span>' for k, n in srcs)
+    rid = cfg["sportsnavi"].rstrip("/").split("/")[-1]
+    den, odds, oasof = {}, {}, ""
+    try:
+        den = parse_denma(fetch(f"https://sports.yahoo.co.jp/keiba/race/denma/{rid}?detail=1"))
+    except Exception as e:
+        print(f"  [warn] 出馬表: {e}")
+    try:
+        odds, oasof = parse_odds(fetch(f"https://sports.yahoo.co.jp/keiba/race/odds/tfw/{rid}"))
+    except Exception as e:
+        print(f"  [warn] オッズ: {e}")
+    fixed = len(den) >= 4  # 出馬表が出ていれば出走確定。載っていない登録馬は除外・回避
+    srcs += [("スポーツナビ 出馬表", len(den)), ("スポーツナビ オッズ", len(odds))]
+    chips = "".join(f'<span class="s {"ok" if n else "ng"}">{"✓" if n else "－"} {html.escape(k)}</span>' for k, n in srcs)
     rl = [("スポーツナビ 特別登録", cfg["sportsnavi"])] + [(n, cfg[k]) for n, k in (("JRA プレレーティング", "jra_prerating"), ("JRA レーティング順位", "jra_rank_news"), ("JRA データ分析", "jra_analysis")) if cfg.get(k)]
     if tw_url:
         rl.append(("JRA 注目レース出走馬情報", tw_url))
     lines = []
     for h in horses:
         r, rc = pre.get(h["name"], (0, ""))
-        flag = ("X" if h["name"] in cfg.get("scratched", []) else "") + ("G" if h["name"] in cfg.get("g1_winners", []) else "") + ("P" if h["name"] in notable else "")
+        dn = den.get(h["name"], {})
+        flag = ("X" if (h["name"] in cfg.get("scratched", []) or (fixed and not dn)) else "") + ("G" if h["name"] in cfg.get("g1_winners", []) else "") + ("P" if h["name"] in notable else "")
         f = [h["name"], h["age"], h["kg"], h["trainer"], h["sire"], h["dam"], h["damsire"],
-             str(r or ""), rc, str(rank.get(h["name"], "")), flag]
+             str(r or ""), rc, str(rank.get(h["name"], "")), flag,
+             dn.get("jockey", ""), dn.get("num", ""), dn.get("frame", ""), dn.get("bw", ""), str(odds.get(h["name"], "")), dn.get("form", ""), dn.get("style", "")]
         lines.append("  " + js_str("|".join(x.replace("'", "’").replace("|", "／") for x in f)))
     box = "<b>見どころ（JRAデータ分析より）</b><br>" + html.escape(ana) if ana else "<b>メモ</b><br>登録馬段階のデータです。"
     sc = cfg.get("scratched", [])
@@ -145,7 +226,7 @@ def build_race(cfg, today):
     rep = {"{{TITLE}}": html.escape(cfg["title"]), "{{EYEBROW}}": html.escape(cfg.get("eyebrow", "")),
            "{{META}}": html.escape(cfg["meta"]), "{{HIGHLIGHT}}": box,
            "{{ASOF}}": f"{now.year}年{now.month}月{now.day}日 {now:%H:%M}", "{{RAW}}": ",\n".join(lines),
-           "{{KEY}}": cfg["slug"] + "-marks", "{{SOURCES}}": chips, "{{LINKS}}": links_html(rl), "{{MEMO}}": html.escape(cfg.get("memo", "")), "{{PRESET}}": json.dumps(cfg.get("odds", {}), ensure_ascii=False)}
+           "{{KEY}}": cfg["slug"] + "-marks", "{{SOURCES}}": chips, "{{LINKS}}": links_html(rl), "{{MEMO}}": html.escape(cfg.get("memo", "")), "{{PHASE}}": ("出走確定・枠順確定" if fixed else "登録馬段階（枠順と騎手は未確定）") + (f"／オッズ {oasof} 更新" if oasof else ""), "{{PRESET}}": json.dumps(cfg.get("odds", {}), ensure_ascii=False)}
     for k, v in rep.items():
         t = t.replace(k, v)
     (OUT / f"{cfg['slug']}.html").write_text(t, encoding="utf-8")
@@ -153,7 +234,8 @@ def build_race(cfg, today):
 
 
 SRC_WHAT = {"スポーツナビ 特別登録": "登録馬・厩舎・血統", "JRA プレレーティング": "レーティングと該当レース", "JRA レーティング順位": "JRAの順位（1〜15位）",
-            "JRA データ分析": "過去10年の傾向", "JRA 今週の注目レース": "JRA注目馬（出走馬情報）"}
+            "JRA データ分析": "過去10年の傾向", "JRA 今週の注目レース": "JRA注目馬（出走馬情報）",
+            "スポーツナビ 出馬表": "枠順・馬番・鞍上・近5走・脚質の推定", "スポーツナビ オッズ": "単勝オッズ"}
 EXT = [("他サイトで見る（リンクのみ）", [("netkeiba レース一覧", "https://race.netkeiba.com/top/race_list.html"), ("netkeiba データベース", "https://db.netkeiba.com/"),
         ("競馬ラボ", "https://www.keibalab.jp/"), ("ウマニティ", "https://umanity.jp/"), ("JBISサーチ", "https://www.jbis.or.jp/"),
         ("楽天競馬", "https://keiba.rakuten.co.jp/"), ("オッズパーク", "https://www.oddspark.com/keiba/")]),

@@ -9,7 +9,31 @@
     "jra_prerating": "https://www.jra.go.jp/datafile/ranking/g1/2026/eliza.html",
     "jra_rank_news": "https://www.jra.go.jp/news/tokubetsu/2026eliza.html",
     "jra_analysis": "https://www.jra.go.jp/keiba/g1/eliza/data.html",
-    "scratched": ["エセルフリーダ"],
-    "g1_winners": ["チェルヴィニア", "カムニャック", "ジュウリョクピエロ", "ステレンボッシュ"]
+    "scratched": [
+      "エセルフリーダ"
+    ],
+    "g1_winners": [
+      "チェルヴィニア",
+      "カムニャック",
+      "ジュウリョクピエロ",
+      "ステレンボッシュ"
+    ]
+  },
+  {
+    "slug": "daily2026",
+    "date": "2026-11-14",
+    "eyebrow": "GⅡ",
+    "title": "第61回 デイリー杯2歳ステークス（GⅡ）",
+    "meta": "2026年11月14日（土）京都11R 芝1600m（外）／2歳 オープン 馬齢",
+    "sportsnavi": "https://sports.yahoo.co.jp/keiba/race/regist/2608050311"
+  },
+  {
+    "slug": "musashino2026",
+    "date": "2026-11-14",
+    "eyebrow": "GⅢ",
+    "title": "第31回 武蔵野ステークス（GⅢ）",
+    "meta": "2026年11月14日（土）東京11R ダート1600m（左）／3歳以上 オープン 別定",
+    "sportsnavi": "https://sports.yahoo.co.jp/keiba/race/regist/2605050311",
+    "jra_analysis": "https://www.jra.go.jp/keiba/race/103/data.html"
   }
 ]
