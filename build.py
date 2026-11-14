@@ -145,7 +145,7 @@ def build_race(cfg, today):
     rep = {"{{TITLE}}": html.escape(cfg["title"]), "{{EYEBROW}}": html.escape(cfg.get("eyebrow", "")),
            "{{META}}": html.escape(cfg["meta"]), "{{HIGHLIGHT}}": box,
            "{{ASOF}}": f"{now.year}年{now.month}月{now.day}日 {now:%H:%M}", "{{RAW}}": ",\n".join(lines),
-           "{{KEY}}": cfg["slug"] + "-marks", "{{SOURCES}}": chips, "{{LINKS}}": links_html(rl)}
+           "{{KEY}}": cfg["slug"] + "-marks", "{{SOURCES}}": chips, "{{LINKS}}": links_html(rl), "{{MEMO}}": html.escape(cfg.get("memo", "")), "{{PRESET}}": json.dumps(cfg.get("odds", {}), ensure_ascii=False)}
     for k, v in rep.items():
         t = t.replace(k, v)
     (OUT / f"{cfg['slug']}.html").write_text(t, encoding="utf-8")
